@@ -1,0 +1,22 @@
+#!/bin/sh
+# primeiro input: core
+#segundo input: arquivo
+core="$1";
+arquivo="$2"
+if [ $# = "2" ];
+	then 
+	if [ -d "/rede/aplic/solr/cores/$1" ];
+		then 
+			if [ -e "/rede/aplic/solr/cores/${1}_dados/$2" ];
+				then
+				curl "$(hostname -I)/biserver-web/$core/update/?commit=true&separator=;&stream.file=/rede/aplic/solr/cores/${1}_dados/$2&stream.contentType=application/csv;charset=UTF-8";
+				echo "Carga realizada"
+			else
+				echo "Arquivo inexistente na pasta /rede/aplic/solr/cores/${1}_dados!"
+			fi
+	else
+		echo "Core inexistente";	
+	fi
+else
+	echo "Input errado!"
+fi

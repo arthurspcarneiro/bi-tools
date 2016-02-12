@@ -1,0 +1,32 @@
+#!/bin/sh
+#input: core
+core="$1";
+if [ $# = "1" ];
+	then 
+	if [ -d "/rede/aplic/solr/cores/$1" ];
+		then 
+			echo "Certeza que deseja apagar o core?[S ou N]";
+			read resposta;
+			if [ $resposta = "S" ];
+				then
+				curl "$(hostname -I)/biserver-web/$core/update/?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true";
+				rm -rf "/rede/aplic/solr/cores/$1"
+				rm -rf "/rede/aplic/solr/cores/${1}_dados"
+				solr_antigo="/rede/aplic/solr/solr_antigo_$(date +%d%m%Y%H%M%S).xml"
+				mv "/rede/aplic/solr/solr.xml" "$solr_antigo"
+				CONTENT="    <core name=\"${core}\"";
+				sed "/$CONTENT/d" $solr_antigo > /rede/aplic/solr/solr.xml;
+				/rede/aplic/jboss-as-7.1.1.Final/standalone/limpa_e_starta_jboss.sh;
+			elif [ $resposta = "N" ];
+				then 
+					echo "Sem exclusao do core";
+			else
+				echo "Nao ha essa alternativa, tente novamente!"
+				limpar_core $1;
+			fi
+	else
+		echo "Core inexistente";
+	fi
+else
+	echo "Input errado!";	
+fi

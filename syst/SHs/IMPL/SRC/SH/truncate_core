@@ -1,0 +1,26 @@
+#!/bin/sh
+#input: core
+core="$1";
+if [ $# = "1" ];
+	then 
+	if [ -d "/rede/aplic/solr/cores/$1" ];
+		then 
+			echo "Certeza que deseja limpar o core?[S ou N]";
+			read resposta;
+			if [ $resposta = "S" ];
+				then
+				curl "$(hostname -I)/biserver-web/$core/update/?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true";
+				echo "Limpeza feita"
+			elif [ $resposta = "N" ];
+				then 
+					echo "Sem limpeza do core";
+			else
+				echo "Nao ha essa alternativa, tente novamente!"
+				limpar_core $1;
+			fi
+	else
+		echo "Core inexistente";
+	fi
+	else
+		echo "Input errado!";	
+fi

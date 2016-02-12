@@ -1,0 +1,56 @@
+#!/bin/sh
+criar_core()
+  {
+    new_core="$1";
+	#criando diretorio
+    mkdir -m 0775 "/rede/aplic/solr/cores/${new_core}";
+    mkdir -m 0775 "/rede/aplic/solr/cores/${new_core}_dados";
+    mkdir -m 0775 "/rede/aplic/solr/cores/${new_core}/index";
+    mkdir -m 0775 "/rede/aplic/solr/cores/${new_core}/tlog";
+    #modificar solr.xml
+	solr_antigo="/rede/aplic/solr/solr_antigo_$(date +%d%m%Y%H%M%S).xml"
+	mv "/rede/aplic/solr/solr.xml" "$solr_antigo"
+    CONTENT="    <core name=\"$new_core\"   instanceDir=\"cores/\" schema=\"schema.xml\" dataDir = \"$new_core/\"    />";
+    #sed '/<\/cores>/i\'"$CONTENT" solr_antigo.xml > solr.xml
+    sed '/<\/cores>/i\'"$CONTENT" $solr_antigo > /rede/aplic/solr/solr.xml;
+    chown jboss.jboss "/rede/aplic/solr/cores/${new_core}";
+    chown jboss.jboss "/rede/aplic/solr/cores/${new_core}/index";
+    chown jboss.jboss "/rede/aplic/solr/cores/${new_core}/tlog";
+}
+
+restart()
+	{
+	/rede/aplic/jboss-as-7.1.1.Final/standalone/limpa_e_starta_jboss.sh;
+}
+
+if [ $# = "2" ];
+	then
+		if [ -d "/rede/aplic/solr/cores/$2" ];
+			then 
+				echo "Cuidado: core existente!";
+			else
+				if [ $1 = "-r" ];
+					then 
+						criar_core "$2"
+						restart;
+					else
+						echo "Erro: parametro errado";
+				fi
+		fi
+elif [ $# = "1" ];
+	then
+		if [ $1 = "-r" ];
+			then
+				echo "Error: parametros errados";
+			else
+				if [ -d "/rede/aplic/solr/cores/$1" ];
+					then 
+						echo "Cuidado: core existente!";
+					else
+						criar_core "$1";
+				fi
+		fi
+else
+	echo "Precisa de parametros"
+fi
+			
